@@ -52,7 +52,7 @@ def Build(args):
   if args.frontend:
     logging.info('====== Building frontend ======')
     subprocess.check_call(
-      ['ng', 'build', '--build-optimizer', '--baseHref="/static/"'],
+      ['ng', 'build', '--build-optimizer', '--baseHref=/'],
       cwd=FRONTEND_DIR)
 
   if args.backend:

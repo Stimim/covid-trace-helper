@@ -12,24 +12,32 @@ def CreateApp(config):
                     static_folder='static')
   app.config.from_object(config)
 
-  # This is a workaround to serve javascript files.
-  # All javascript files should be placed under /static/<path>
-  @app.route('/<path:path>.js', methods=['GET'])
-  def JavascriptFile(path):
-    return flask.send_from_directory('static', path + '.js')
+  @app.route('/test-login')
+  def TestLogin():
+    user = user_module.User.GetUser()
+    return f'email: {user.email}, user_id: {user.id}'
 
   @app.route('/')
   def Root():
     return flask.render_template('index.html')
 
-  @app.route('/policy')
-  def Policy():
-    return flask.render_template('policy.html')
+  @app.route('/upload')
+  def UploadPage():
+    return flask.render_template('index.html')
 
-  @app.route('/test-login')
-  def TestLogin():
-    user = user_module.User.GetUser()
-    return f'email: {user.email}, user_id: {user.id}'
+  @app.route('/process')
+  def ProcessPage():
+    return flask.render_template('index.html')
+
+  @app.route('/policy')
+  def PolicyPage():
+    return flask.render_template('index.html')
+
+  # This is a workaround to serve static files.
+  # All static files should be placed under /static/<path>
+  @app.route('/<path:path>', methods=['GET'])
+  def EverythingElse(path):
+    return flask.send_from_directory('static', path)
 
   return app
 
