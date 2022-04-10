@@ -65,8 +65,7 @@ def Build(args):
     # shutil.copy(os.path.join(BACKEND_DIR, 'main.py'), BUILD_DIR)
     shutil.copytree(BACKEND_DIR, BUILD_DIR, dirs_exist_ok=True,
                     ignore=shutil.ignore_patterns('*.pyc', '__pycache__'))
-    shutil.copytree(os.path.join(ROOT_DIR, 'lib'),
-                    os.path.join(BUILD_DIR, 'lib'))
+    shutil.copy2(REQUIREMENTS_PATH, os.path.join(BUILD_DIR, 'requirements.txt'))
     shutil.copytree(os.path.join(ROOT_DIR, 'templates'),
                     os.path.join(BUILD_DIR, 'templates'))
     shutil.copytree(FRONTEND_DIST_DIR, BUILD_STATIC_DIR)
