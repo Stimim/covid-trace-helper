@@ -4,6 +4,7 @@ import flask
 
 import config as config_module
 from datastore import user as user_module
+from datastore import photo as photo_module
 
 
 def CreateApp(config):
@@ -16,6 +17,55 @@ def CreateApp(config):
   def TestLogin():
     user = user_module.User.GetUser()
     return f'email: {user.email}, user_id: {user.id}'
+
+  @app.route('/api/upload-image', methods=['POST'])
+  def UploadImage():
+    logging.info('in upload-image')
+    print(flask.request.files)
+    if 'image[]' not in flask.request.files:
+      return {'error': 'cannot find image[] in request.files'}, 400
+
+    print(flask.request.form)
+    try:
+      date = flask.request.form['date']
+      region = flask.request.form['region']
+      source = flask.request.form['source']
+    except Exception:
+      return {'error': 'Invalid form data'}, 400
+
+    image_list = flask.request.files.getlist('image[]')
+    result_list = []
+    has_error = False
+    for file in image_list:
+      if not file or file.filename == '':
+        continue
+      try:
+        photo = photo_module.Photo.Save(file, date, source, region)
+        result_list.append({
+          'name': file.filename,
+          'checksum': photo.checksum,
+        })
+      except Exception as e:
+        result_list.append({
+          'name': file.filename,
+          'error': str(e),
+        })
+    return {'results': result_list}, (400 if has_error else 200)
+
+  @app.route('/api/image', methods=['GET'])
+  def QueryImage():
+    try:
+      date = flask.request.args['date']
+      region = flask.request.args.get('region') or None
+    except Exception:
+      return {'error': 'Invalid form data'}, 400
+    try:
+      results = photo_module.Photo.Query(date, region)
+    except Exception as e:
+      return {'error': str(e)}, 400
+
+    return {'results': [photo.ToDict() for photo in results]}
+
 
   @app.route('/')
   def Root():

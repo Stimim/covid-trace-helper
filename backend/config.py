@@ -1,6 +1,7 @@
 import os
 
 
+UPLOAD_FOLDER = '/tmp'
 SECRET_KEY = None
 GOOGLE_CLIENT_ID = None
 GOOGLE_CLIENT_SECRET = None

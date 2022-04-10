@@ -1,0 +1,12 @@
+.upload-panel {
+  padding-left: 20px;
+  padding-top: 20px;
+}
+
+.source-input {
+  width: 25em;
+}
+
+.file-input, mat-form-field {
+  padding: 10px 0px;
+}

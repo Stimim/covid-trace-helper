@@ -1,1 +1,36 @@
-<p>process-page works!</p>
+<mat-grid-list cols="8">
+  <mat-grid-tile colspan="1">
+    <form [formGroup]="form_group">
+      <mat-form-field>
+        <mat-label>日期</mat-label>
+        <input
+          matInput
+          [matDatepicker]="picker"
+          formControlName="date"
+
+          required
+          name="date"
+          >
+          <mat-hint>圖片的公佈日期</mat-hint>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field><br>
+
+      <mat-form-field class="region-input">
+        <mat-label>縣市</mat-label>
+        <input
+          matInput
+          formControlName="region"
+          placeholder="台北市"
+          [matAutocomplete]="autocompleteRegion"
+          name="source">
+        <mat-autocomplete #autocompleteRegion="matAutocomplete">
+          <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+            {{option}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field><br>
+    </form>
+  </mat-grid-tile>
+  <mat-grid-tile colspan="7"> b </mat-grid-tile>
+</mat-grid-list>
