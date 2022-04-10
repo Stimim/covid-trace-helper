@@ -1,1 +1,4 @@
 Flask==2.1.1
+google-cloud-datastore==2.5.1
+cryptography
+python-jose[cryptography]

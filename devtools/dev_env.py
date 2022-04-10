@@ -84,7 +84,7 @@ def RunLocalServer(args):
 
 
 def Deploy(args):
-  cmd = ['gcloud', 'app', 'deploy']
+  cmd = ['gcloud', 'app', 'deploy', '-q']
   if args.project:
     cmd += ['--project', args.project]
 

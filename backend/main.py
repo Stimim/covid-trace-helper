@@ -3,6 +3,7 @@ import logging
 import flask
 
 import config as config_module
+from datastore import user as user_module
 
 
 def CreateApp(config):
@@ -20,6 +21,15 @@ def CreateApp(config):
   @app.route('/')
   def Root():
     return flask.render_template('index.html')
+
+  @app.route('/policy')
+  def Policy():
+    return flask.render_template('policy.html')
+
+  @app.route('/test-login')
+  def TestLogin():
+    user = user_module.User.GetUser()
+    return f'email: {user.email}, user_id: {user.id}'
 
   return app
 
