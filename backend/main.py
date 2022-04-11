@@ -1,4 +1,4 @@
-import logging
+import http
 
 import flask
 
@@ -16,31 +16,43 @@ def CreateApp(config):
   @app.route('/test-login')
   def TestLogin():
     user = user_module.User.GetUser()
-    return f'email: {user.email}, user_id: {user.id}'
+    if user:
+      return user.ToDict()
+    else:
+      return f'Not logged in'
 
   @app.route('/api/upload-image', methods=['POST'])
   def UploadImage():
-    logging.info('in upload-image')
-    print(flask.request.files)
-    if 'image[]' not in flask.request.files:
-      return {'error': 'cannot find image[] in request.files'}, 400
+    user = user_module.User.GetUser()
+    if not user:
+      return ('Please login to access this function',
+              http.HTTPStatus.UNAUTHORIZED)
+    if not user.can_upload_photo:
+      return ('You cannot upload images', http.HTTPStatus.UNAUTHORIZED)
 
-    print(flask.request.form)
+    if 'image[]' not in flask.request.files:
+      return ('cannot find image[] in request.files',
+              http.HTTPStatus.BAD_REQUEST)
+
     try:
       date = flask.request.form['date']
       region = flask.request.form['region']
       source = flask.request.form['source']
     except Exception:
-      return {'error': 'Invalid form data'}, 400
+      return ('Invalid form data', http.HTTPStatus.BAD_REQUEST)
 
     image_list = flask.request.files.getlist('image[]')
     result_list = []
-    has_error = False
     for file in image_list:
       if not file or file.filename == '':
         continue
       try:
-        photo = photo_module.Photo.Save(file, date, source, region)
+        photo = photo_module.Photo.Create(
+            file=file,
+            date=date,
+            source=source,
+            region=region,
+            uploaded_by=user.id)
         result_list.append({
           'name': file.filename,
           'checksum': photo.checksum,
@@ -50,7 +62,7 @@ def CreateApp(config):
           'name': file.filename,
           'error': str(e),
         })
-    return {'results': result_list}, (400 if has_error else 200)
+    return {'results': result_list}
 
   @app.route('/api/image', methods=['GET'])
   def QueryImage():
@@ -58,11 +70,11 @@ def CreateApp(config):
       date = flask.request.args['date']
       region = flask.request.args.get('region') or None
     except Exception:
-      return {'error': 'Invalid form data'}, 400
+      return ('Invalid form data', http.HTTPStatus.BAD_REQUEST)
     try:
       results = photo_module.Photo.Query(date, region)
     except Exception as e:
-      return {'error': str(e)}, 400
+      return str(e), http.HTTPStatus.BAD_REQUEST
 
     return {'results': [photo.ToDict() for photo in results]}
 
@@ -77,6 +89,10 @@ def CreateApp(config):
 
   @app.route('/process')
   def ProcessPage():
+    return flask.render_template('index.html')
+
+  @app.route('/profile')
+  def ProfilePage():
     return flask.render_template('index.html')
 
   @app.route('/policy')

@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { PolicyPageComponent } from './policy-page/policy-page.component';
 import { ProcessPageComponent } from './process-page/process-page.component';
+import { ProfilePageComponent } from './profile-page/profile-page.component';
 import { UploadPageComponent } from './upload-page/upload-page.component';
 
 const routes: Routes = [
@@ -10,6 +11,7 @@ const routes: Routes = [
   { path: 'policy', component: PolicyPageComponent },
   { path: 'process', component: ProcessPageComponent },
   { path: 'upload', component: UploadPageComponent },
+  { path: 'profile', component: ProfilePageComponent },
 ];
 
 @NgModule({

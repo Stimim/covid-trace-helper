@@ -3,7 +3,11 @@ import os
 import requests
 
 from flask import request
+from google.cloud import datastore as datastore_module
 from jose import jwt
+
+import config as config_module
+from datastore import datastore_helper
 
 
 _KEYS = None
@@ -15,7 +19,6 @@ def _Keys():
   if _KEYS is None:
     resp = requests.get('https://www.gstatic.com/iap/verify/public_key')
     _KEYS = resp.json()
-
   return _KEYS
 
 def _Audience():
@@ -38,18 +41,47 @@ def _Audience():
 
 
 class User:
+  DATASTORE_KEY = 'User'
+
   __slots__ = [
     'email',
-    'id'
+    'id',
+    'can_upload_photo',
+    'can_delete_photo',
   ]
 
-  def __init__(self, info):
-    self.email = info['email']
-    self.id = info['sub']
+  def __init__(self, email, id, can_upload_photo=False, can_delete_photo=False):
+    self.email = email
+    self.id = id
+    self.can_upload_photo = can_upload_photo
+    self.can_delete_photo = can_delete_photo
+
+  def ToDict(self):
+    return {
+      'email': self.email,
+      'id': self.id,
+      'can_upload_photo': self.can_upload_photo,
+      'can_delete_photo': self.can_delete_photo,
+    }
 
   @classmethod
   def Query(cls, user_id):
-    del user_id
+    client = datastore_helper.Client()
+    query = client.query(kind=cls.DATASTORE_KEY)
+    query.add_filter('id', '=', user_id)
+    results = list(query.fetch())
+    if len(results) > 0:
+      return cls(**results[0])
+    return None
+
+  @classmethod
+  def Create(cls, email, user_id):
+    user = cls(email, user_id)
+    client = datastore_helper.Client()
+    entity = datastore_module.Entity(client.key(cls.DATASTORE_KEY))
+    entity.update(user.ToDict())
+    client.put(entity)
+    return user
 
   @classmethod
   def GetUser(cls):
@@ -64,4 +96,10 @@ class User:
       audience=_Audience()
     )
 
-    return cls(info)
+    email = info['email']
+    user_id = info['sub']
+
+    user = cls.Query(user_id)
+    if user:
+      return user
+    return cls.Create(email, user_id)

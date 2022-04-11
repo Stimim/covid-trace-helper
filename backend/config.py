@@ -1,17 +1,16 @@
 import os
 
 
-UPLOAD_FOLDER = '/tmp'
-SECRET_KEY = None
-GOOGLE_CLIENT_ID = None
-GOOGLE_CLIENT_SECRET = None
-
+STORAGE_BUCKET_ID = os.getenv('COVID_TRACE_HELPER_STORAGE_BUCKET_ID',
+                              'taiwan-covid-trace-helper.appspot.com')
 
 ON_APPENGINE = os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine')
 
-if ON_APPENGINE:
-  pass
+IS_PROD = os.getenv('COVID_TRACE_HELPER_IS_PROD') == 'TRUE'
+
+if IS_PROD:
+  DATASTORE_NAMESPACE = 'prod'
+  STORAGE_ROOT_FOLDER = 'prod'
 else:
-  SECRET_KEY = '00' * 32
-  GOOGLE_CLIENT_ID = ''
-  GOOGLE_CLIENT_SECRET = ''
+  DATASTORE_NAMESPACE = 'staging'
+  STORAGE_ROOT_FOLDER = 'staging'

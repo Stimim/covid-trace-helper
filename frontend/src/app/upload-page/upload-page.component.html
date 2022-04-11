@@ -33,7 +33,7 @@
         placeholder="台北市"
         [matAutocomplete]="autocompleteRegion"
         required
-        name="source">
+        name="region">
       <mat-autocomplete #autocompleteRegion="matAutocomplete">
         <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
           {{option}}
@@ -62,4 +62,21 @@
       Upload
     </button>
   </form>
+</div>
+
+<div class="upload-result">
+  <mat-list>
+    <mat-list-item *ngFor="let upload_result of upload_results">
+      <mat-icon matListIcon color="primary" *ngIf="upload_result.checksum">check_circle</mat-icon>
+      <mat-icon matListIcon color="warn" *ngIf="upload_result.error">error</mat-icon>
+      <h3 matLine>{{ upload_result.name }}</h3>
+      <p matLine>
+        <span *ngIf="upload_result.checksum">{{ upload_result.checksum }}</span>
+        <span *ngIf="upload_result.error">{{ upload_result.error }}</span>
+      </p>
+    </mat-list-item>
+    <mat-list-item *ngIf="uploading">
+      <mat-spinner diameter=30></mat-spinner>
+    </mat-list-item>
+  </mat-list>
 </div>

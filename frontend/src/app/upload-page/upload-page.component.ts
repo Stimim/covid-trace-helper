@@ -3,7 +3,7 @@ import { Validators, FormGroup, FormControl } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
-import { UploadImageService } from '../upload-image.service';
+import { UploadResult, UploadImageService } from '../upload-image.service';
 import { RegionOptions, RegionValidator } from '../utils/region-selector';
 
 
@@ -14,8 +14,10 @@ import { RegionOptions, RegionValidator } from '../utils/region-selector';
 })
 export class UploadPageComponent implements OnInit {
 
-  file_list?: FileList = undefined;
+  uploading = false;
+  upload_results: UploadResult[] = [];
 
+  file_list?: FileList = undefined;
   form_group = new FormGroup({
     // Use today as default value
     date: new FormControl(new Date()),
@@ -46,9 +48,21 @@ export class UploadPageComponent implements OnInit {
     console.info('The following files will be uploaded: ', this.file_list);
     console.info(this.form_group.value);
 
+    this.uploading = true;
     this.uploadImageService.Upload(this.form_group.value, this.file_list).subscribe(
-      (event: any) => {
-        console.info(event);
+      (response: any) => {
+        console.info('Upload Image Result:', response);
+        this.uploading = false;
+        if (response.results) {
+          this.upload_results.push(...response.results);
+        } else if (response.error) {
+          this.upload_results.push({name: '', error: response.error});
+        }
+      },
+      (error: any) => {
+        console.info('Upload Image Failed:', error);
+        this.uploading = false;
+        this.upload_results.push({name: '', error: error.error});
       }
     );
   }

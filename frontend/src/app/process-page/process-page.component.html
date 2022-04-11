@@ -1,6 +1,6 @@
-<mat-grid-list cols="8">
-  <mat-grid-tile colspan="1">
-    <form [formGroup]="form_group">
+<mat-sidenav-container>
+  <mat-sidenav mode="side" opened class="sidenav">
+    <form [formGroup]="formGroup" class="search-form">
       <mat-form-field>
         <mat-label>日期</mat-label>
         <input
@@ -30,7 +30,35 @@
           </mat-option>
         </mat-autocomplete>
       </mat-form-field><br>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="Search()"
+        [disabled]="!formGroup.valid"
+        >
+        Search
+      </button>
     </form>
-  </mat-grid-tile>
-  <mat-grid-tile colspan="7"> b </mat-grid-tile>
-</mat-grid-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <mat-accordion multi>
+      <mat-expansion-panel hideToggle *ngFor="let photo of photoList">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            {{ photo.region }} {{ photo.date }}
+          </mat-panel-title>
+          <mat-panel-description>
+            <code>{{ photo.checksum }}</code>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <ng-container *ngTemplateOutlet="matExpansionPanelContent"></ng-container>
+
+        <ng-template #matExpansionPanelContent>
+          <img src="{{ GetURL(photo) }}"><br>
+          來源: <a href="{{ photo.source }}" target="_blank">{{photo.source}}</a>
+        </ng-template>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </mat-sidenav-content>
+</mat-sidenav-container>

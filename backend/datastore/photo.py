@@ -1,9 +1,13 @@
 import hashlib
 import json
+import os
 import typing
 
 from google.cloud import storage as storage_module
 from google.cloud import datastore as datastore_module
+
+import config as config_module
+from datastore import datastore_helper
 
 
 MIMETYPE_TO_EXT = {
@@ -22,15 +26,18 @@ class Photo:
              # format.
     'source',  # The source of the image.
     'region',
+    'uploaded_by',
     'text_data_key',
   ]
 
-  def __init__(self, checksum, mimetype, date, source, region, text_data_key):
+  def __init__(self, checksum, mimetype, date, source, region, uploaded_by,
+               text_data_key):
     self.checksum = checksum
     self.mimetype = mimetype
     self.date = date
     self.source = source
     self.region = region
+    self.uploaded_by = uploaded_by
     self.text_data_key = text_data_key
 
   def ToDict(self):
@@ -40,6 +47,7 @@ class Photo:
       'date': self.date,
       'source': self.source,
       'region': self.region,
+      'uploaded_by': self.uploaded_by,
       'text_data_key': self.text_data_key,
     }
 
@@ -47,7 +55,7 @@ class Photo:
     return json.dumps(self.ToDict())
 
   @classmethod
-  def Save(cls, file, date, region, source):
+  def Create(cls, file, date, region, source, uploaded_by):
 
     if file.mimetype not in MIMETYPE_TO_EXT:
       raise Exception(f'File type {file.mimetype} is not allowed')
@@ -57,15 +65,17 @@ class Photo:
     filename = f'{checksum}.{MIMETYPE_TO_EXT[file.mimetype]}'
 
     storage_client = storage_module.Client()
-    bucket = storage_client.bucket('taiwan-covid-trace-helper.appspot.com')
-    blob = bucket.blob(filename)
+    bucket = storage_client.bucket(config_module.STORAGE_BUCKET_ID)
+    blob = bucket.blob(os.path.join(config_module.STORAGE_ROOT_FOLDER,
+                                    filename))
     if blob.exists():
       raise Exception(f'Photo {filename} already exists')
     blob.upload_from_string(data, content_type=file.mimetype)
 
-    photo = cls(checksum, file.mimetype, date, source, region, None)
+    photo = cls(checksum, file.mimetype, date, source, region, uploaded_by,
+                None)
 
-    store_client = datastore_module.Client()
+    store_client = datastore_helper.Client()
     entity = datastore_module.Entity(store_client.key(cls.DATASTORE_KEY))
     entity.update(photo.ToDict())
     store_client.put(entity)
@@ -74,12 +84,12 @@ class Photo:
 
   @classmethod
   def Query(cls, date, region) -> typing.List['Photo']:
-    client = datastore_module.Client();
+    client = datastore_helper.Client()
 
     query = client.query(kind=cls.DATASTORE_KEY)
-    query.add_filter("date", "=", date)
+    query.add_filter('date', '=', date)
     if region:
-      query.add_filter("region", "=", region)
+      query.add_filter('region', '=', region)
 
     results = []
     for result in query.fetch():

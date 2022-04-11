@@ -62,6 +62,7 @@ def Build(args):
 
     os.mkdir(BUILD_DIR)
     shutil.copy(os.path.join(ROOT_DIR, 'app.yaml'), BUILD_DIR)
+    shutil.copy(os.path.join(ROOT_DIR, 'staging.yaml'), BUILD_DIR)
     # shutil.copy(os.path.join(BACKEND_DIR, 'main.py'), BUILD_DIR)
     shutil.copytree(BACKEND_DIR, BUILD_DIR, dirs_exist_ok=True,
                     ignore=shutil.ignore_patterns('*.pyc', '__pycache__'))
@@ -87,6 +88,8 @@ def Deploy(args):
   cmd = ['gcloud', 'app', 'deploy', '-q']
   if args.project:
     cmd += ['--project', args.project]
+  if args.staging:
+    cmd += ['staging.yaml']
 
   subprocess.check_call(cmd, cwd=BUILD_DIR)
 
@@ -112,6 +115,7 @@ def main():
 
   parser_deploy = subparsers.add_parser('deploy', help='deploy on gcloud')
   parser_deploy.add_argument('--project', type=str)
+  parser_deploy.add_argument('--staging', action='store_true')
   parser_deploy.set_defaults(func=Deploy)
 
   # Parse and run

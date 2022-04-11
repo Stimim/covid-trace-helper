@@ -8,12 +8,21 @@ interface FormValueInterface {
   region: string;
 };
 
+
+export interface UploadResult {
+  name: string;
+  checksum?: string;
+  error?: string;
+};
+
+
+const API_URL = "/api/upload-image";
+
+
 @Injectable({
   providedIn: 'root'
 })
 export class UploadImageService {
-  API_URL = "/api/upload-image";
-
   constructor(private http: HttpClient) { }
 
   Upload(form_value: FormValueInterface, file_list: FileList): Observable<any> {
@@ -32,8 +41,6 @@ export class UploadImageService {
     form_data.append('source', form_value.source);
     form_data.append('region', form_value.region);
 
-    console.info(form_data);
-
-    return this.http.post(this.API_URL, form_data);
+    return this.http.post(API_URL, form_data);
   }
 }

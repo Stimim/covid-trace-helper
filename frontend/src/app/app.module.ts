@@ -1,18 +1,22 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatDatepickerModule} from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
-import {MatGridListModule} from '@angular/material/grid-list';
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -21,6 +25,7 @@ import { ProcessPageComponent } from './process-page/process-page.component';
 import { PolicyPageComponent } from './policy-page/policy-page.component';
 import { UploadPageComponent } from './upload-page/upload-page.component';
 import { UploadImageService } from './upload-image.service';
+import { ProfilePageComponent } from './profile-page/profile-page.component';
 
 @NgModule({
   declarations: [
@@ -28,6 +33,7 @@ import { UploadImageService } from './upload-image.service';
     ProcessPageComponent,
     PolicyPageComponent,
     UploadPageComponent,
+    ProfilePageComponent,
   ],
   imports: [
     BrowserModule,
@@ -37,16 +43,20 @@ import { UploadImageService } from './upload-image.service';
     ReactiveFormsModule,
 
     /* Material UI Components */
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    MatToolbarModule,
-    MatFormFieldModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatInputModule,
-    MatGridListModule,
     MatAutocompleteModule,
+    MatButtonModule,
+    MatDatepickerModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatGridListModule,
+    MatIconModule,
+    MatInputModule,
+    MatListModule,
+    MatMenuModule,
+    MatNativeDateModule,
+    MatProgressSpinnerModule,
+    MatSidenavModule,
+    MatToolbarModule,
 
     /* Services */
     HttpClientModule,
