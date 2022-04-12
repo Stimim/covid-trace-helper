@@ -1,0 +1,22 @@
+<div class="container">
+  <div class="item">
+    <p>來源:
+      <a href="{{ photo.source }}">
+        {{ photo.source }}
+      </a>
+    </p>
+    <img src="{{ GetURL(photo) }}">
+  </div>
+  <div class="item" [ngStyle]="ComputeOuterBouxStyle()">
+    <div *ngFor="let row of rows"
+      [ngStyle]="ComputeBoxStyle(row)">
+      <span *ngFor="let text of row.texts">
+        {{ text.desc }}
+      </span>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="error">
+  <mat-icon color="warn">error</mat-icon> {{ error }}
+</div>

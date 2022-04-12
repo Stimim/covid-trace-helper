@@ -50,7 +50,7 @@ class User:
     'can_delete_photo',
   ]
 
-  def __init__(self, email, id, can_upload_photo=False, can_delete_photo=False):
+  def __init__(self, email, id, can_upload_photo=True, can_delete_photo=False):
     self.email = email
     self.id = id
     self.can_upload_photo = can_upload_photo

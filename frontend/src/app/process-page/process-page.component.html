@@ -52,11 +52,8 @@
           </mat-panel-description>
         </mat-expansion-panel-header>
 
-        <ng-container *ngTemplateOutlet="matExpansionPanelContent"></ng-container>
-
-        <ng-template #matExpansionPanelContent>
-          <img src="{{ GetURL(photo) }}"><br>
-          來源: <a href="{{ photo.source }}" target="_blank">{{photo.source}}</a>
+        <ng-template matExpansionPanelContent>
+          <app-photo-editor [photo]="photo"></app-photo-editor>
         </ng-template>
       </mat-expansion-panel>
     </mat-accordion>

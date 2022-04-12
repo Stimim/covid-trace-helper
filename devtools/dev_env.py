@@ -51,9 +51,11 @@ def Build(args):
   # Build frontend first
   if args.frontend:
     logging.info('====== Building frontend ======')
-    subprocess.check_call(
-      ['ng', 'build', '--build-optimizer', '--baseHref=/'],
-      cwd=FRONTEND_DIR)
+    if args.staging:
+      cmd = ['ng', 'build', '--configuration', 'development']
+    else:
+      cmd = ['ng', 'build', '--build-optimizer', '--baseHref=/']
+    subprocess.check_call(cmd, cwd=FRONTEND_DIR)
 
   if args.backend:
     logging.info('====== Building backend ======')
@@ -108,6 +110,8 @@ def main():
                             help='Build backend code')
   parser_build.add_argument('--frontend', type=bool, default=True,
                             help='Build frontend code')
+  parser_build.add_argument('--staging', action='store_true',
+                            help='Build staging code')
   parser_build.set_defaults(func=Build)
 
   # parser_run = subparsers.add_parser('run', help='run local server')

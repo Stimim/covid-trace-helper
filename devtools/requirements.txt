@@ -1,5 +1,7 @@
 Flask==2.1.1
+appengine-python-standard==1.0.0
+cryptography
 google-cloud-datastore==2.5.1
 google-cloud-storage==2.2.1
-cryptography
+google-cloud-vision==2.7.2
 python-jose[cryptography]

@@ -21,4 +21,10 @@ export class ImageService {
     }
     return this.http.get(API_URL, { params });
   }
+
+  QueryTextDetectionResult(checksum: string): Observable<any> {
+    const params: any = { checksum }
+
+    return this.http.get(API_URL + '/text_detection_result', { params });
+  }
 }

@@ -5,16 +5,16 @@ import { map, startWith } from 'rxjs/operators';
 
 import { RegionOptions, RegionValidator } from '../utils/region-selector';
 import { ImageService } from '../image.service';
+import { environment } from '../../environments/environment';
 
 
-interface Photo {
-    checksum: string;
-    mimetype: string;
-    date: string;
-    source: string;
-    region: string;
-    uploaded_by: string;  // this is a user_id
-    text_data_key: string | null;
+export interface Photo {
+  checksum: string;
+  mimetype: string;
+  date: string;
+  source: string;
+  region: string;
+  uploaded_by: string;  // this is a user_id
 };
 
 
@@ -24,7 +24,16 @@ interface Photo {
   styleUrls: ['./process-page.component.css']
 })
 export class ProcessPageComponent implements OnInit {
-  photoList: Photo[] = [];
+  photoList: Photo[] = [
+    //{
+      //"checksum": "b1ae916c02f31d48dc13570ac3d8b23b6e290895f78365cca2f7da0860a263fb",
+      //"date": "2022-4-12",
+      //"mimetype": "image/jpeg",
+      //"region": "台北市",
+      //"source": "https://www.facebook.com/humansoftaipei/posts/281516480838928",
+      //"uploaded_by": "accounts.google.com:100043699853766952083"
+    //}
+  ];
 
   formGroup = new FormGroup({
     // Use today as default value
@@ -64,15 +73,6 @@ export class ProcessPageComponent implements OnInit {
   }
 
   GetURL(photo: Photo) {
-    let ext = '';
-    switch (photo.mimetype) {
-      case 'image/png':
-        ext = 'png';
-        break;
-      case 'image/jpeg':
-        ext = 'jpeg';
-        break;
-    }
-    return `https://storage.cloud.google.com/taiwan-covid-trace-helper.appspot.com/staging/${photo.checksum}.${ext}`
+    return `https://storage.cloud.google.com/${environment.storageBucketId}/${environment.storageRootFolder}/${photo.checksum}`;
   }
 }

@@ -5,6 +5,8 @@
 export const environment = {
   production: false,
   webapiurl: (window as any)["envconfig"]["apiurl"] || "default",
+  storageRootFolder: 'staging',
+  storageBucketId: 'taiwan-covid-trace-helper.appspot.com',
 };
 
 /*

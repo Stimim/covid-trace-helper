@@ -26,6 +26,7 @@ import { PolicyPageComponent } from './policy-page/policy-page.component';
 import { UploadPageComponent } from './upload-page/upload-page.component';
 import { UploadImageService } from './upload-image.service';
 import { ProfilePageComponent } from './profile-page/profile-page.component';
+import { PhotoEditorComponent } from './photo-editor/photo-editor.component';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { ProfilePageComponent } from './profile-page/profile-page.component';
     PolicyPageComponent,
     UploadPageComponent,
     ProfilePageComponent,
+    PhotoEditorComponent,
   ],
   imports: [
     BrowserModule,

@@ -3,17 +3,22 @@ import json
 import os
 import typing
 
+from google.appengine.ext import deferred
 from google.cloud import storage as storage_module
 from google.cloud import datastore as datastore_module
 
 import config as config_module
 from datastore import datastore_helper
+from vision import ocr
 
 
 MIMETYPE_TO_EXT = {
   'image/png': 'png',
   'image/jpeg': 'jpeg',
 }
+
+
+_GS_URI_TEMPLATE = 'gs://{bucket_id}/{root_folder}/{checksum}'
 
 
 class Photo:
@@ -27,18 +32,17 @@ class Photo:
     'source',  # The source of the image.
     'region',
     'uploaded_by',
-    'text_data_key',
+
+    '__entity',
   ]
 
-  def __init__(self, checksum, mimetype, date, source, region, uploaded_by,
-               text_data_key):
+  def __init__(self, checksum, mimetype, date, source, region, uploaded_by):
     self.checksum = checksum
     self.mimetype = mimetype
     self.date = date
     self.source = source
     self.region = region
     self.uploaded_by = uploaded_by
-    self.text_data_key = text_data_key
 
   def ToDict(self):
     return {
@@ -48,11 +52,19 @@ class Photo:
       'source': self.source,
       'region': self.region,
       'uploaded_by': self.uploaded_by,
-      'text_data_key': self.text_data_key,
     }
+
+  def GetStorageUrl(self) -> str:
+    return _GS_URI_TEMPLATE.format(
+      bucket_id=config_module.STORAGE_BUCKET_ID,
+      root_folder=config_module.STORAGE_ROOT_FOLDER,
+      checksum=self.checksum)
 
   def __repr__(self):
     return json.dumps(self.ToDict())
+
+  def UpdateEntity(self, d):
+    self.__entity.update(d)
 
   @classmethod
   def Create(cls, file, date, region, source, uploaded_by):
@@ -62,7 +74,7 @@ class Photo:
 
     data = file.stream.read()
     checksum = hashlib.sha256(data).digest().hex()
-    filename = f'{checksum}.{MIMETYPE_TO_EXT[file.mimetype]}'
+    filename = checksum
 
     storage_client = storage_module.Client()
     bucket = storage_client.bucket(config_module.STORAGE_BUCKET_ID)
@@ -72,13 +84,14 @@ class Photo:
       raise Exception(f'Photo {filename} already exists')
     blob.upload_from_string(data, content_type=file.mimetype)
 
-    photo = cls(checksum, file.mimetype, date, source, region, uploaded_by,
-                None)
+    photo = cls(checksum, file.mimetype, date, source, region, uploaded_by)
 
     store_client = datastore_helper.Client()
     entity = datastore_module.Entity(store_client.key(cls.DATASTORE_KEY))
     entity.update(photo.ToDict())
     store_client.put(entity)
+
+    deferred.defer(ocr.DetectTextTask, photo.checksum)
 
     return photo
 
@@ -93,5 +106,21 @@ class Photo:
 
     results = []
     for result in query.fetch():
-      results.append(cls(**result))
+      o = cls(**result)
+      o.__entity = result
+      results.append(o)
     return results
+
+  @classmethod
+  def QueryByChecksum(cls, checksum: str) -> 'Photo':
+    client = datastore_helper.Client()
+
+    query = client.query(kind=cls.DATASTORE_KEY)
+    query.add_filter('checksum', '=', checksum)
+    results = list(query.fetch())
+    if len(results) >= 0:
+      o = cls(**results[0])
+      o.__entity = results[0]
+      return o
+    raise ValueError(f'No such photo (checksum={checksum})')
+

@@ -1,3 +1,5 @@
 export const environment = {
-  production: true
+  production: true,
+  storageRootFolder: 'prod',
+  storageBucketId: 'taiwan-covid-trace-helper.appspot.com',
 };

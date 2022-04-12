@@ -1,10 +1,12 @@
 import http
 
 import flask
+from google.appengine.api import wrap_wsgi_app
 
 import config as config_module
 from datastore import user as user_module
 from datastore import photo as photo_module
+from vision import ocr
 
 
 def CreateApp(config):
@@ -12,6 +14,7 @@ def CreateApp(config):
                     template_folder='static',
                     static_folder='static')
   app.config.from_object(config)
+  app.wsgi_app = wrap_wsgi_app(app.wsgi_app, use_deferred=True)
 
   @app.route('/test-login')
   def TestLogin():
@@ -70,7 +73,7 @@ def CreateApp(config):
       date = flask.request.args['date']
       region = flask.request.args.get('region') or None
     except Exception:
-      return ('Invalid form data', http.HTTPStatus.BAD_REQUEST)
+      return ('Invalid query', http.HTTPStatus.BAD_REQUEST)
     try:
       results = photo_module.Photo.Query(date, region)
     except Exception as e:
@@ -78,6 +81,18 @@ def CreateApp(config):
 
     return {'results': [photo.ToDict() for photo in results]}
 
+  @app.route('/api/image/text_detection_result', methods=['GET'])
+  def QueryImageTextDetectionResult():
+    try:
+      checksum = flask.request.args['checksum']
+    except Exception:
+      return ('Invalid query', http.HTTPStatus.BAD_REQUEST)
+
+    try:
+      results = ocr.QueryTextDetectionResult(checksum)
+    except Exception as e:
+      return str(e), http.HTTPStatus.BAD_REQUEST
+    return {'results': results}
 
   @app.route('/')
   def Root():
