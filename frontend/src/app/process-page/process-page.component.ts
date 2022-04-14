@@ -25,14 +25,14 @@ export interface Photo {
 })
 export class ProcessPageComponent implements OnInit {
   photoList: Photo[] = [
-    //{
-      //"checksum": "b1ae916c02f31d48dc13570ac3d8b23b6e290895f78365cca2f7da0860a263fb",
-      //"date": "2022-4-12",
-      //"mimetype": "image/jpeg",
-      //"region": "台北市",
-      //"source": "https://www.facebook.com/humansoftaipei/posts/281516480838928",
-      //"uploaded_by": "accounts.google.com:100043699853766952083"
-    //}
+    {
+      "checksum": "b1ae916c02f31d48dc13570ac3d8b23b6e290895f78365cca2f7da0860a263fb",
+      "date": "2022-4-12",
+      "mimetype": "image/jpeg",
+      "region": "台北市",
+      "source": "https://www.facebook.com/humansoftaipei/posts/281516480838928",
+      "uploaded_by": "accounts.google.com:100043699853766952083"
+    }
   ];
 
   formGroup = new FormGroup({

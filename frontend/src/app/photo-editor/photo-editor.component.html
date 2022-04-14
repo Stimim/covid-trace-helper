@@ -5,14 +5,12 @@
         {{ photo.source }}
       </a>
     </p>
-    <img src="{{ GetURL(photo) }}">
+    <img src="{{ GetURL(photo) }}" #img crossOrigin="anonymous">
   </div>
-  <div class="item" [ngStyle]="ComputeOuterBouxStyle()">
-    <div *ngFor="let row of rows"
-      [ngStyle]="ComputeBoxStyle(row)">
-      <span *ngFor="let text of row.texts">
-        {{ text.desc }}
-      </span>
+  <div class="item" [ngStyle]="ComputeOuterBoxStyle()">
+    <div *ngFor="let text of texts"
+      [ngStyle]="ComputeTextStyle(text)">
+      {{ text.desc }}
     </div>
   </div>
 </div>
