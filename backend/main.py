@@ -94,6 +94,27 @@ def CreateApp(config):
       return str(e), http.HTTPStatus.BAD_REQUEST
     return {'results': results}
 
+  @app.route('/api/image/set_process_state', methods=['POST'])
+  def SetImageProcessState():
+    try:
+      checksum = flask.request.form['checksum']
+      process_state = flask.request.form['process_state']
+      assert any(process_state == x.value for x in photo_module.ProcessState)
+      process_state = getattr(photo_module.ProcessState, process_state)
+    except Exception:
+      return ('Invalid form data', http.HTTPStatus.BAD_REQUEST)
+
+    try:
+      photo = photo_module.Photo.QueryByChecksum(checksum)
+    except ValueError:
+      return ('Invalid form data', http.HTTPStatus.BAD_REQUEST)
+
+    try:
+      photo.SetProcessState(process_state)
+    except Exception:
+      return ('BAD REQUEST', http.HTTPStatus.BAD_REQUEST)
+    return {'status': 'OK'}
+
   @app.route('/')
   def Root():
     return flask.render_template('index.html')

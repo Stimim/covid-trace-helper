@@ -39,12 +39,36 @@
         Search
       </button>
     </form>
+    <mat-divider></mat-divider>
+    <form [formGroup]="photoEditorFormGroup" class="search-form">
+      <mat-form-field>
+        <mat-label>字體大小</mat-label>
+        <input
+          matInput
+          formControlName="fontSize"
+          type="number"
+          >
+      </mat-form-field><br>
+      <mat-slide-toggle formControlName="showBoundary">顯示垂直分割線</mat-slide-toggle><br>
+      <mat-slide-toggle formControlName="showBoundingBox">顯示文字辨識外框</mat-slide-toggle><br>
+    </form>
   </mat-sidenav>
   <mat-sidenav-content>
     <mat-accordion multi>
       <mat-expansion-panel hideToggle *ngFor="let photo of photoList">
         <mat-expansion-panel-header>
           <mat-panel-title>
+            <ng-container [ngSwitch]="photo.process_state">
+              <span *ngSwitchCase="'NOT_STARTED'" class="not-started">
+                未開始
+              </span>
+              <span *ngSwitchCase="'STARTED'" class="started">
+                處理中
+              </span>
+              <span *ngSwitchCase="'FINISHED'" class="finished">
+                已完成
+              </span>
+            </ng-container>
             {{ photo.region }} {{ photo.date }}
           </mat-panel-title>
           <mat-panel-description>
@@ -53,7 +77,10 @@
         </mat-expansion-panel-header>
 
         <ng-template matExpansionPanelContent>
-          <app-photo-editor [photo]="photo"></app-photo-editor>
+          <app-photo-editor
+            [photo]="photo"
+            [formGroup]="photoEditorFormGroup"
+            ></app-photo-editor>
         </ng-template>
       </mat-expansion-panel>
     </mat-accordion>

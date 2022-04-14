@@ -11,12 +11,20 @@ const SETTING = {
 };
 
 
+export function IsOverlapping(x0: number, x1: number, y0: number, y1: number) {
+  return (x0 <= y0 && y0 <= x1) || (y0 <= x0 && x0 <= y1);
+}
+
+
 export class TextAnnotation {
   desc: string;
   minX: number;
   maxX: number;
   minY: number;
   maxY: number;
+  selected: boolean = false;
+  measured: boolean = false;
+  columnIndex: number = -1;
 
   constructor([desc, minX, maxX, minY, maxY]: [string, number, number, number, number]) {
     this.desc = desc;
@@ -27,11 +35,11 @@ export class TextAnnotation {
   }
 
   ShouldMerge(other: TextAnnotation) {
-    let has_overlap = this.minY <= other.minY && other.minY <= this.maxY;
-    has_overlap ||= other.minY <= this.minY && this.minY <= other.maxY;
-
-    if (!has_overlap)
+    if (!IsOverlapping(this.minY, this.maxY, other.minY, other.maxY))
       return false;
+    if (this.minY === other.minY && this.maxY === other.maxY) {
+      return true;
+    }
     if (this.maxX > other.minX)
       // My right boundary is in the right of the left boundary of other
       return false;
@@ -42,7 +50,12 @@ export class TextAnnotation {
   }
 
   Merge(other: TextAnnotation) {
-    this.desc += other.desc;
+    if (this.minX <= other.minX) {
+      this.desc += other.desc;
+    } else {
+      this.desc = other.desc + this.desc;
+    }
+
     this.minX = Math.min(this.minX, other.minX);
     this.maxX = Math.max(this.maxX, other.maxX);
     this.minY = Math.min(this.minY, other.minY);
@@ -52,7 +65,7 @@ export class TextAnnotation {
 
 
 async function DetectBoundary(imgRef: ElementRef): Promise<TextAnnotation[]> {
-  console.info('start DetectBoundary');
+  // console.info('start DetectBoundary');
   const img = imgRef.nativeElement;
   const image = cv.imread(img);
   const edgeImage = new cv.Mat();
@@ -134,19 +147,23 @@ function FindColumn(boundaryList: TextAnnotation[], text: TextAnnotation) {
 
 
 export async function ProcessTextAnnotation(
-    imgRef: ElementRef, textAnnotations: TextAnnotation[]): Promise<[TextAnnotation[], number, number]> {
+    imgRef: ElementRef, textAnnotations: TextAnnotation[]): Promise<[TextAnnotation[], TextAnnotation[], number, number]> {
   const boundaryList = await DetectBoundary(imgRef);
-  const retval: TextAnnotation[] = [];
+  let retval: TextAnnotation[] = [];
   let width = 0;
   let height = 0;
   let index = -1;
-  let currentColumn = -1;
 
-  for (let text of textAnnotations) {
+  for (const text of textAnnotations) {
     // update width, height
     width = Math.max(text.maxX, width);
     height = Math.max(text.maxY, height);
+    
+    // set columnIndex
+    text.columnIndex = FindColumn(boundaryList, text);
+  }
 
+  for (let text of textAnnotations) {
     // Check if we should merge this box with previous one.
     if (index === -1) {
       retval.push(text);
@@ -154,17 +171,40 @@ export async function ProcessTextAnnotation(
       continue;
     }
 
-    let column = FindColumn(boundaryList, text);
     let shouldMerge = false;
 
-    if (column === currentColumn && retval[index].ShouldMerge(text)) {
+    if (text.columnIndex === retval[index].columnIndex && retval[index].ShouldMerge(text)) {
       retval[index].Merge(text);
     } else {
       retval.push(text);
       index++;
-      currentColumn = column;
     }
   }
 
-  return [retval, width, height];
+  textAnnotations = [...retval];
+  retval = [];
+
+  textAnnotations.sort((a, b) => {
+    return a.minX - b.minX;
+  });
+  console.log(textAnnotations);
+
+  for (const text of textAnnotations) {
+    let merged = false;
+    for (const other of retval) {
+      if (text.columnIndex === other.columnIndex && other.ShouldMerge(text)) {
+        other.Merge(text);
+        merged = true;
+        break;
+      }
+    }
+    if (!merged) {
+      retval.push(text);
+    }
+  }
+
+  retval.sort((a, b) => {
+    return a.minY - b.minY;
+  });
+  return [retval, boundaryList, width, height];
 }

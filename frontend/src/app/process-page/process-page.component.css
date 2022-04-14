@@ -14,3 +14,20 @@ mat-sidenav-container {
 .item {
   flex: 1;
 }
+
+mat-divider {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.not-started {
+  background: #bfbfbf;
+}
+
+.started {
+  background: #fff8b5;
+}
+
+.finished {
+  background: #9de0ae;
+}

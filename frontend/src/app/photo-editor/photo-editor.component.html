@@ -5,13 +5,34 @@
         {{ photo.source }}
       </a>
     </p>
-    <img src="{{ GetURL(photo) }}" #img crossOrigin="anonymous">
+    <img #img crossOrigin="anonymous"
+      src="{{ GetURL(photo) }}"
+      [ngClass]="{'img': processTextAnnotationDone}">
+
   </div>
-  <div class="item" [ngStyle]="ComputeOuterBoxStyle()">
-    <div *ngFor="let text of texts"
-      [ngStyle]="ComputeTextStyle(text)">
-      {{ text.desc }}
+  <div class="item">
+    <div *ngIf="processTextAnnotationDone">
+      <button mat-raised-button color="warn" (click)="ClearSelection()">
+        取消選取區域
+      </button>
+
+      <mat-form-field appearance="fill">
+        <mat-label>處理進度</mat-label>
+        <mat-select
+          (selectionChange)="onSelectionChange($event)"
+          [value]="photo.process_state || 'NOT_STARTED'">
+          <mat-option value="NOT_STARTED">未開始</mat-option>
+          <mat-option value="STARTED">處理中</mat-option>
+          <mat-option value="FINISHED">已完成</mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
+
+    <canvas width=1 height=1 #canvas
+      (mousedown)="onMouseEvent($event, 'down')"
+      (mousemove)="onMouseEvent($event, 'move')"
+      (mouseup)="onMouseEvent($event, 'up')"
+      ></canvas>
   </div>
 </div>
 

@@ -1,3 +1,4 @@
+import enum
 import hashlib
 import json
 import os
@@ -21,6 +22,12 @@ MIMETYPE_TO_EXT = {
 _GS_URI_TEMPLATE = 'gs://{bucket_id}/{root_folder}/{checksum}'
 
 
+class ProcessState(enum.Enum):
+  NOT_STARTED = 'NOT_STARTED'
+  STARTED = 'STARTED'
+  FINISHED = 'FINISHED'
+
+
 class Photo:
   DATASTORE_KEY = 'Photo'
 
@@ -32,19 +39,25 @@ class Photo:
     'source',  # The source of the image.
     'region',
     'uploaded_by',
+    'process_state',
 
     '__entity',
   ]
 
-  def __init__(self, checksum, mimetype, date, source, region, uploaded_by):
+  def __init__(self, checksum, mimetype, date, source, region, uploaded_by,
+               process_state=ProcessState.NOT_STARTED.value):
     self.checksum = checksum
     self.mimetype = mimetype
     self.date = date
     self.source = source
     self.region = region
     self.uploaded_by = uploaded_by
+    self.process_state = process_state
 
   def ToDict(self):
+    process_state = self.process_state
+    if isinstance(process_state, ProcessState):
+      process_state = process_state.value
     return {
       'checksum': self.checksum,
       'mimetype': self.mimetype,
@@ -52,6 +65,7 @@ class Photo:
       'source': self.source,
       'region': self.region,
       'uploaded_by': self.uploaded_by,
+      'process_state': process_state,
     }
 
   def GetStorageUrl(self) -> str:
@@ -65,6 +79,15 @@ class Photo:
 
   def UpdateEntity(self, d):
     self.__entity.update(d)
+
+  def SetProcessState(self, new_state: ProcessState):
+    if self.process_state == new_state.value:
+      return
+
+    self.process_state = new_state.value
+    self.__entity.update({'process_state': self.process_state})
+    store_client = datastore_helper.Client()
+    store_client.put(self.__entity)
 
   @classmethod
   def Create(cls, file, date, region, source, uploaded_by):
@@ -123,4 +146,3 @@ class Photo:
       o.__entity = results[0]
       return o
     raise ValueError(f'No such photo (checksum={checksum})')
-

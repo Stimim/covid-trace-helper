@@ -4,18 +4,8 @@ import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
 import { RegionOptions, RegionValidator } from '../utils/region-selector';
-import { ImageService } from '../image.service';
+import { Photo, ImageService } from '../image.service';
 import { environment } from '../../environments/environment';
-
-
-export interface Photo {
-  checksum: string;
-  mimetype: string;
-  date: string;
-  source: string;
-  region: string;
-  uploaded_by: string;  // this is a user_id
-};
 
 
 @Component({
@@ -24,21 +14,18 @@ export interface Photo {
   styleUrls: ['./process-page.component.css']
 })
 export class ProcessPageComponent implements OnInit {
-  photoList: Photo[] = [
-    {
-      "checksum": "b1ae916c02f31d48dc13570ac3d8b23b6e290895f78365cca2f7da0860a263fb",
-      "date": "2022-4-12",
-      "mimetype": "image/jpeg",
-      "region": "台北市",
-      "source": "https://www.facebook.com/humansoftaipei/posts/281516480838928",
-      "uploaded_by": "accounts.google.com:100043699853766952083"
-    }
-  ];
+  photoList: Photo[] = [];
 
   formGroup = new FormGroup({
     // Use today as default value
     date: new FormControl(new Date()),
     region: new FormControl('', RegionValidator()),
+  });
+
+  photoEditorFormGroup = new FormGroup({
+    fontSize: new FormControl('16'),
+    showBoundary: new FormControl(false),
+    showBoundingBox: new FormControl(false),
   });
   filteredOptions!: Observable<string[]>;
 
