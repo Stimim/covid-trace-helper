@@ -126,9 +126,9 @@ export class PhotoEditorComponent implements OnInit {
 
     if (this.formGroup.value.showBoundary) {
       for (const b of this.boundaryList) {
-        const d = b.maxX - b.minX;
         ctx.strokeStyle = 'red';
-        ctx.strokeRect(b.minX, 0, 1, this.outerBoxHeight);
+        // ctx.strokeRect(b.minX, 0, 1, this.outerBoxHeight);
+        ctx.strokeRect(b.minX, b.minY, 1, b.maxY - b.minY);
         ctx.strokeStyle = 'black';
       }
     }

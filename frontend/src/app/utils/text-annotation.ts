@@ -7,7 +7,8 @@ declare var cv: any;
 
 const SETTING = {
   VERTICAL_LINE_LENGTH_THRESHOLD: 0.04,
-  IMAGE_DISPLAY_MAX_HEIGHT: 800,
+  // How much overlap in X axis should be count as a new row?
+  NEW_ROW_DETECTION_THRESHOLD: 0.5,
 };
 
 
@@ -40,9 +41,11 @@ export class TextAnnotation {
     if (this.minY === other.minY && this.maxY === other.maxY) {
       return true;
     }
-    if (this.maxX > other.minX)
+    const threshold = (this.maxX - this.minX) * SETTING.NEW_ROW_DETECTION_THRESHOLD;
+    if (this.maxX - other.minX > threshold) {
       // My right boundary is in the right of the left boundary of other
       return false;
+    }
     //if (this.maxX + 8 < other.minX)
       //// The gap between to boxes is too large
       //return false;
@@ -120,9 +123,6 @@ async function DetectBoundary(imgRef: ElementRef): Promise<TextAnnotation[]> {
     boxList.sort((a, b) => {
       return a.minX - b.minX
     });
-    for (let box of boxList) {
-      console.info(box);
-    }
   }
 
   labelledImage.delete();
@@ -146,6 +146,28 @@ function FindColumn(boundaryList: TextAnnotation[], text: TextAnnotation) {
 }
 
 
+function MergeRows(toProcess: TextAnnotation[]) {
+  const result: TextAnnotation[] = [];
+  // Google Vision API should sort the text annotations with a natural reading order
+  // (top to down, left to right). So there is no need to sort it by ourselves.
+  // toProcess.sort((a, b) => a.minX - b.minX);
+  for (const text of toProcess) {
+    if (result.length === 0) {
+      result.push(text);
+      continue;
+    }
+
+    const prev = result[result.length - 1];
+    if (prev.ShouldMerge(text)) {
+      prev.Merge(text);
+    } else {
+      result.push(text);
+    }
+  }
+  return result;
+}
+
+
 export async function ProcessTextAnnotation(
     imgRef: ElementRef, textAnnotations: TextAnnotation[]): Promise<[TextAnnotation[], TextAnnotation[], number, number]> {
   const boundaryList = await DetectBoundary(imgRef);
@@ -158,50 +180,29 @@ export async function ProcessTextAnnotation(
     // update width, height
     width = Math.max(text.maxX, width);
     height = Math.max(text.maxY, height);
-    
-    // set columnIndex
-    text.columnIndex = FindColumn(boundaryList, text);
   }
 
-  for (let text of textAnnotations) {
-    // Check if we should merge this box with previous one.
-    if (index === -1) {
-      retval.push(text);
-      index++;
-      continue;
-    }
+  for (const boundary of boundaryList) {
+    console.log(boundary);
+    const toProcess: TextAnnotation[] = [];
+    const toSkip: TextAnnotation[] = [];
 
-    let shouldMerge = false;
-
-    if (text.columnIndex === retval[index].columnIndex && retval[index].ShouldMerge(text)) {
-      retval[index].Merge(text);
-    } else {
-      retval.push(text);
-      index++;
-    }
-  }
-
-  textAnnotations = [...retval];
-  retval = [];
-
-  textAnnotations.sort((a, b) => {
-    return a.minX - b.minX;
-  });
-  console.log(textAnnotations);
-
-  for (const text of textAnnotations) {
-    let merged = false;
-    for (const other of retval) {
-      if (text.columnIndex === other.columnIndex && other.ShouldMerge(text)) {
-        other.Merge(text);
-        merged = true;
-        break;
+    for (const text of textAnnotations) {
+      if (IsOverlapping(text.minY, text.maxY, boundary.minY, boundary.maxY)) {
+        const midX = (text.minX + text.maxX) / 2;
+        if (midX < boundary.minX) {
+          toProcess.push(text);
+          continue;
+        }
       }
+      toSkip.push(text);
     }
-    if (!merged) {
-      retval.push(text);
-    }
+
+    retval.push(...MergeRows(toProcess));
+    textAnnotations = toSkip;
   }
+
+  retval.push(...MergeRows(textAnnotations));
 
   retval.sort((a, b) => {
     return a.minY - b.minY;
