@@ -11,3 +11,7 @@
 .img {
   max-width: 600px;
 }
+
+canvas {
+  border: 1px green solid;
+}

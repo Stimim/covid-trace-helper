@@ -6,7 +6,9 @@ declare var cv: any;
 
 
 const SETTING = {
-  VERTICAL_LINE_LENGTH_THRESHOLD: 0.04,
+  VERTICAL_LINE_MERGE_BEGIN: 0.01,
+  VERTICAL_LINE_MERGE_END: 0.10,
+  VERTICAL_LINE_MERGE_STEP: 2,
   // How much overlap in X axis should be count as a new row?
   NEW_ROW_DETECTION_THRESHOLD: 0.5,
 };
@@ -75,30 +77,33 @@ async function DetectBoundary(imgRef: ElementRef): Promise<TextAnnotation[]> {
 
   // Turn into gray scale.
   cv.cvtColor(image, edgeImage, cv.COLOR_RGB2GRAY, 0);
-  cv.blur(edgeImage, edgeImage, new cv.Size(3, 3));
+  // cv.blur(edgeImage, edgeImage, new cv.Size(3, 3));
   const lowThreshold = 5;
   const ratio = 3;
   const kernelSize = 3;
   cv.Canny(edgeImage, edgeImage, lowThreshold, ratio * lowThreshold, kernelSize);
 
-  // Detect vertical line pixels.
-  let verticalStructure = cv.getStructuringElement(
-    cv.MORPH_RECT,
-    new cv.Size(1, SETTING.VERTICAL_LINE_LENGTH_THRESHOLD * edgeImage.rows));
-  cv.erode(edgeImage, edgeImage, verticalStructure, new cv.Point(-1, -1));
-  cv.dilate(edgeImage, edgeImage, verticalStructure, new cv.Point(-1, -1));
+  const squareStructure = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(10, 10));
 
-  // Merge nearby lines.
-  const squareStructure = cv.getStructuringElement(
-    cv.MORPH_RECT, new cv.Size(10, 10));
-  cv.dilate(edgeImage, edgeImage, squareStructure, new cv.Point(-1, -1));
-  cv.erode(edgeImage, edgeImage, squareStructure, new cv.Point(-1, -1));
+  const startSize = Math.floor(edgeImage.rows * SETTING.VERTICAL_LINE_MERGE_BEGIN);
+  const endSize = Math.floor(edgeImage.rows * SETTING.VERTICAL_LINE_MERGE_END);
+  const gap = Math.ceil((endSize - startSize) / SETTING.VERTICAL_LINE_MERGE_STEP);
+  for (let size = startSize; size < endSize + gap; size += gap) {
+    // Detect vertical line pixels.
+    const verticalStructure = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(1, size));
 
-  // Merge vertical lines.
-  verticalStructure = cv.getStructuringElement(
-    cv.MORPH_RECT, new cv.Size(1, edgeImage.rows / 10));
-  cv.dilate(edgeImage, edgeImage, verticalStructure, new cv.Point(-1, -1));
-  cv.erode(edgeImage, edgeImage, verticalStructure, new cv.Point(-1, -1));
+    // Remove lines that are too short
+    cv.morphologyEx(edgeImage, edgeImage, cv.MORPH_OPEN, verticalStructure);
+    // Merge lines that are close to each other vertically
+    cv.morphologyEx(edgeImage, edgeImage, cv.MORPH_CLOSE, verticalStructure);
+
+    verticalStructure.delete();
+
+    // To merge lines that are close to each other horizontally
+    cv.morphologyEx(edgeImage, edgeImage, cv.MORPH_CLOSE, squareStructure);
+  }
+
+  squareStructure.delete();
 
   // Label pixels of vertical lines by finding connected components.
   const labelledImage = new cv.Mat(edgeImage.size(), cv.CV_16U);
@@ -126,8 +131,6 @@ async function DetectBoundary(imgRef: ElementRef): Promise<TextAnnotation[]> {
   }
 
   labelledImage.delete();
-  squareStructure.delete();
-  verticalStructure.delete();
   edgeImage.delete();
   image.delete();
 
@@ -183,7 +186,6 @@ export async function ProcessTextAnnotation(
   }
 
   for (const boundary of boundaryList) {
-    console.log(boundary);
     const toProcess: TextAnnotation[] = [];
     const toSkip: TextAnnotation[] = [];
 

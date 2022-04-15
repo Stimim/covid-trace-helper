@@ -1,5 +1,6 @@
-<div class="container">
-  <div class="item">
+<div class="container" (click)="ClearSelection()">
+  <div class="item"
+       [hidden]="!(formGroup.value.showOriginalImage)" >
     <p>來源:
       <a href="{{ photo.source }}">
         {{ photo.source }}
@@ -7,15 +8,16 @@
     </p>
     <img #img crossOrigin="anonymous"
       src="{{ GetURL(photo) }}"
-      [ngClass]="{'img': processTextAnnotationDone}">
-
+      [ngClass]="{'img': processTextAnnotationDone}" >
   </div>
   <div class="item">
     <div *ngIf="processTextAnnotationDone">
       <button mat-raised-button color="warn" (click)="ClearSelection()">
         取消選取區域
       </button>
-
+      <button mat-raised-button color="primary" (click)="CopySourceToClipboard()">
+        複製來源網址
+      </button>
       <mat-form-field appearance="fill">
         <mat-label>處理進度</mat-label>
         <mat-select
@@ -32,6 +34,7 @@
       (mousedown)="onMouseEvent($event, 'down')"
       (mousemove)="onMouseEvent($event, 'move')"
       (mouseup)="onMouseEvent($event, 'up')"
+      (click)="onClickCanvas($event)"
       ></canvas>
   </div>
 </div>

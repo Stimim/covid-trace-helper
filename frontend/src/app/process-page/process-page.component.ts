@@ -26,6 +26,7 @@ export class ProcessPageComponent implements OnInit {
     fontSize: new FormControl('16'),
     showBoundary: new FormControl(false),
     showBoundingBox: new FormControl(false),
+    showOriginalImage: new FormControl(true),
   });
   filteredOptions!: Observable<string[]>;
 

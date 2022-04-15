@@ -160,6 +160,8 @@ export class PhotoEditorComponent implements OnInit {
   clicked = false;
 
   onMouseEvent(event: MouseEvent, type: 'down'|'move'|'up') {
+    event.stopPropagation();
+    event.preventDefault();
     let x = event.offsetX / this.scale;
     let y = event.offsetY / this.scale;
 
@@ -196,6 +198,22 @@ export class PhotoEditorComponent implements OnInit {
     this.DrawCanvas();
   }
 
+  SetClipboard(text: string) {
+    const permissionClipboardWrite = "clipboard-write" as PermissionName;
+    navigator.permissions.query({name: permissionClipboardWrite}).then(result => {
+      if (result.state == "granted" || result.state == "prompt") {
+        navigator.clipboard.writeText(text).then(
+          () => {
+            // success
+          },
+          () => {
+            console.error('failed to set clipboard, text: ', text);
+          }
+        );
+      }
+    });
+  }
+
   SelectTexts() {
     if (!this.selectedAreaStartPoint || !this.selectedAreaEndPoint) return;
 
@@ -212,12 +230,7 @@ export class PhotoEditorComponent implements OnInit {
     }
     const selectedText = this.texts.filter(text => text.selected).map(text => text.desc).join('\n');
 
-    const permissionClipboardWrite = "clipboard-write" as PermissionName;
-    navigator.permissions.query({name: permissionClipboardWrite}).then(result => {
-      if (result.state == "granted" || result.state == "prompt") {
-        navigator.clipboard.writeText(selectedText);
-      }
-    });
+    this.SetClipboard(selectedText);
   }
 
   GetURL(photo: Photo) {
@@ -281,5 +294,14 @@ export class PhotoEditorComponent implements OnInit {
         event.source.value = oldValue;
       }
     );
+  }
+
+  CopySourceToClipboard() {
+    this.SetClipboard(this.photo.source);
+  }
+
+  onClickCanvas(e: Event) {
+    e.stopPropagation();
+    e.preventDefault();
   }
 }
