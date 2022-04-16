@@ -1,5 +1,5 @@
 <mat-sidenav-container>
-  <mat-sidenav mode="side" opened class="sidenav">
+  <mat-sidenav mode="side" opened class="sidenav" disableClose>
     <form [formGroup]="formGroup" class="search-form">
       <mat-form-field>
         <mat-label>日期</mat-label>
@@ -18,17 +18,14 @@
 
       <mat-form-field class="region-input">
         <mat-label>縣市</mat-label>
-        <input
-          matInput
-          formControlName="region"
-          placeholder="台北市"
-          [matAutocomplete]="autocompleteRegion"
-          name="source">
-        <mat-autocomplete #autocompleteRegion="matAutocomplete">
-          <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
-            {{option}}
-          </mat-option>
-        </mat-autocomplete>
+        <select formControlName="region" matNativeControl>
+          <option value="">全部</option>
+          <optgroup *ngFor="let group of regionOptions" [label]="group.name">
+            <option *ngFor="let option of group.regions" [value]="option">
+              {{option}}
+            </option>
+          </optgroup>
+        </select>
       </mat-form-field><br>
       <button
         mat-raised-button

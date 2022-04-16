@@ -14,6 +14,8 @@ import { RegionOptions, RegionValidator } from '../utils/region-selector';
 })
 export class UploadPageComponent implements OnInit {
 
+  readonly regionOptions = RegionOptions;
+
   uploading = false;
   upload_results: UploadResult[] = [];
 
@@ -25,16 +27,9 @@ export class UploadPageComponent implements OnInit {
     region: new FormControl('', RegionValidator()),
   });
 
-  filteredOptions!: Observable<string[]>;
-
   constructor(private uploadImageService: UploadImageService) { }
 
-  ngOnInit(): void {
-    this.filteredOptions = this.form_group.get("region")!.valueChanges.pipe(
-      startWith(''),
-      map(value => this._Filter(value)),
-    );
-  }
+  ngOnInit(): void { }
 
   onFileChange(event: any) {
     this.file_list = event.target.files;
@@ -65,10 +60,5 @@ export class UploadPageComponent implements OnInit {
         this.upload_results.push({name: '', error: error.error});
       }
     );
-  }
-
-  private _Filter(value: string): string[] {
-    const filterValue = value.replace('臺', '台');
-    return RegionOptions.filter(option => option.includes(filterValue));
   }
 }

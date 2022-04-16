@@ -15,6 +15,8 @@ import { environment } from '../../environments/environment';
   styleUrls: ['./process-page.component.css']
 })
 export class ProcessPageComponent implements OnInit {
+  readonly regionOptions = RegionOptions;
+
   photoList: Photo[] = [];
 
   formGroup = new FormGroup({
@@ -29,7 +31,6 @@ export class ProcessPageComponent implements OnInit {
     showBoundingBox: new FormControl(false),
     showOriginalImage: new FormControl(true),
   });
-  filteredOptions!: Observable<string[]>;
 
   constructor(
     private imageService: ImageService,
@@ -50,15 +51,6 @@ export class ProcessPageComponent implements OnInit {
         );
       }
     });
-    this.filteredOptions = this.formGroup.get("region")!.valueChanges.pipe(
-      startWith(''),
-      map(value => this._Filter(value)),
-    );
-  }
-
-  private _Filter(value: string): string[] {
-    const filterValue = value.replace('臺', '台');
-    return RegionOptions.filter(option => option.includes(filterValue));
   }
 
   Search() {

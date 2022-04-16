@@ -27,18 +27,13 @@
 
     <mat-form-field class="region-input">
       <mat-label>縣市</mat-label>
-      <input
-        matInput
-        formControlName="region"
-        placeholder="台北市"
-        [matAutocomplete]="autocompleteRegion"
-        required
-        name="region">
-      <mat-autocomplete #autocompleteRegion="matAutocomplete">
-        <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
-          {{option}}
-        </mat-option>
-      </mat-autocomplete>
+      <select formControlName="region" matNativeControl>
+        <optgroup *ngFor="let group of regionOptions" [label]="group.name">
+          <option *ngFor="let option of group.regions" [value]="option">
+            {{option}}
+          </option>
+        </optgroup>
+      </select>
     </mat-form-field><br>
 
     <mat-form-field class="source-input">
