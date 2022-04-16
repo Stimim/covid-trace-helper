@@ -39,7 +39,6 @@ export class ProcessPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      console.info(params);
       const checksum: string = params['checksum'];
       if (checksum) {
         this.imageService.QueryByChecksum(checksum).subscribe(
