@@ -1,1 +1,11 @@
-<p>profile-page works!</p>
+<ng-template [ngIf]="loading">
+  Loading...
+</ng-template>
+<ng-template [ngIf]="me">
+  <p>email: {{ me.email }} </p>
+  <p>can_upload_photo: {{ me.can_upload_photo }} </p>
+  <p>can_delete_photo: {{ me.can_delete_photo }} </p>
+</ng-template>
+<ng-template [ngIf]="!loading && !me">
+  <p>Not logged in.</p>
+</ng-template>

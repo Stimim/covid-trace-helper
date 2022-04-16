@@ -28,6 +28,14 @@ def CreateApp(config):
     else:
       return f'Not logged in'
 
+  @app.route('/api/user/me', methods=['GET'])
+  def GetCurrentUser():
+    user = user_module.User.GetUser()
+    if user:
+      return user.ToDict()
+    return ('Not logged in', http.HTTPStatus.UNAUTHORIZED)
+
+
   @app.route('/api/upload-image', methods=['POST'])
   def UploadImage():
     user = user_module.User.GetUser()

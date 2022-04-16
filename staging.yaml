@@ -1,5 +1,8 @@
 runtime: python39
 
+# https://cloud.google.com/appengine/docs/standard/python3/services/access
+app_engine_apis: true
+
 env_variables:
   COVID_TRACE_HELPER_STORAGE_BUCKET_ID: 'taiwan-covid-trace-helper.appspot.com'
   COVID_TRACE_HELPER_IS_PROD: 'FALSE'
