@@ -15,3 +15,7 @@
 canvas {
   border: 1px green solid;
 }
+
+.tool-list button {
+  margin-right: 10px;
+}

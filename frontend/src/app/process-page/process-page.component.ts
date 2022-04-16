@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Validators, FormGroup, FormControl } from '@angular/forms';
+import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
@@ -30,9 +31,25 @@ export class ProcessPageComponent implements OnInit {
   });
   filteredOptions!: Observable<string[]>;
 
-  constructor(private imageService: ImageService) { }
+  constructor(
+    private imageService: ImageService,
+    private route: ActivatedRoute) {
+  }
 
   ngOnInit(): void {
+    this.route.params.subscribe(params => {
+      console.info(params);
+      const checksum: string = params['checksum'];
+      if (checksum) {
+        this.imageService.QueryByChecksum(checksum).subscribe(
+          (response: any) => {
+            if (response.results) {
+              this.photoList = response.results;
+            }
+          }
+        );
+      }
+    });
     this.filteredOptions = this.formGroup.get("region")!.valueChanges.pipe(
       startWith(''),
       map(value => this._Filter(value)),
@@ -53,9 +70,9 @@ export class ProcessPageComponent implements OnInit {
     const dateStr = `${dateYear}-${dateMonth}-${dateDate}`
     this.imageService.Query(
       dateStr, this.formGroup.value.region).subscribe(
-      (event: any) => {
-        if (event.results) {
-          this.photoList = event.results;
+      (response: any) => {
+        if (response.results) {
+          this.photoList = response.results;
         }
       });
   }

@@ -12,6 +12,7 @@ const routes: Routes = [
   { path: 'process', component: ProcessPageComponent },
   { path: 'upload', component: UploadPageComponent },
   { path: 'profile', component: ProfilePageComponent },
+  { path: 'process/:checksum', component: ProcessPageComponent },
 ];
 
 @NgModule({

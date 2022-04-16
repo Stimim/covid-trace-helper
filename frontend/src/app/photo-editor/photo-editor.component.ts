@@ -296,12 +296,17 @@ export class PhotoEditorComponent implements OnInit {
     );
   }
 
+  onClickCanvas(e: Event) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+
   CopySourceToClipboard() {
     this.SetClipboard(this.photo.source);
   }
 
-  onClickCanvas(e: Event) {
-    e.stopPropagation();
-    e.preventDefault();
+  CopyUrlOfThisPageToClipboard() {
+    const origin = location.origin;
+    this.SetClipboard(`${origin}/process/${this.photo.checksum}`);
   }
 }

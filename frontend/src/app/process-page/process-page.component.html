@@ -60,13 +60,13 @@
         <mat-expansion-panel-header>
           <mat-panel-title>
             <ng-container [ngSwitch]="photo.process_state">
-              <span *ngSwitchCase="'NOT_STARTED'" class="not-started">
+              <span *ngSwitchCase="'NOT_STARTED'" class="process-state not-started">
                 未開始
               </span>
-              <span *ngSwitchCase="'STARTED'" class="started">
+              <span *ngSwitchCase="'STARTED'" class="process-state started">
                 處理中
               </span>
-              <span *ngSwitchCase="'FINISHED'" class="finished">
+              <span *ngSwitchCase="'FINISHED'" class="process-state finished">
                 已完成
               </span>
             </ng-container>

@@ -11,12 +11,15 @@
       [ngClass]="{'img': processTextAnnotationDone}" >
   </div>
   <div class="item">
-    <div *ngIf="processTextAnnotationDone">
+    <div *ngIf="processTextAnnotationDone" class="tool-list">
       <button mat-raised-button color="warn" (click)="ClearSelection()">
         取消選取區域
       </button>
       <button mat-raised-button color="primary" (click)="CopySourceToClipboard()">
         複製來源網址
+      </button>
+      <button mat-raised-button color="primary" (click)="CopyUrlOfThisPageToClipboard()">
+        分享此頁
       </button>
       <mat-form-field appearance="fill">
         <mat-label>處理進度</mat-label>

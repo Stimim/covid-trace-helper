@@ -1,4 +1,5 @@
 import http
+import re
 
 import flask
 from google.appengine.api import wrap_wsgi_app
@@ -7,6 +8,9 @@ import config as config_module
 from datastore import user as user_module
 from datastore import photo as photo_module
 from vision import ocr
+
+
+_RE_CHECKSUM = re.compile('^[0-9a-f]{64}$')
 
 
 def CreateApp(config):
@@ -81,6 +85,14 @@ def CreateApp(config):
 
     return {'results': [photo.ToDict() for photo in results]}
 
+  @app.route('/api/image/<string:checksum>', methods=['GET'])
+  def QueryImageByChecksum(checksum: str):
+    try:
+      photo = photo_module.Photo.QueryByChecksum(checksum)
+    except Exception as e:
+      return str(e), http.HTTPStatus.BAD_REQUEST
+    return {'results': [photo.ToDict()]}
+
   @app.route('/api/image/text_detection_result', methods=['GET'])
   def QueryImageTextDetectionResult():
     try:
@@ -119,19 +131,26 @@ def CreateApp(config):
   def Root():
     return flask.render_template('index.html')
 
-  @app.route('/upload')
+  @app.route('/upload/')
   def UploadPage():
     return flask.render_template('index.html')
 
-  @app.route('/process')
+  @app.route('/process/')
   def ProcessPage():
     return flask.render_template('index.html')
 
-  @app.route('/profile')
+  @app.route('/process/<string:checksum>')
+  def ProcessPageWithChecksum(checksum: str):
+    checksum = checksum.lower()
+    if checksum and not _RE_CHECKSUM.match(checksum):
+      return ('Invalid checksum', http.HTTPStatus.BAD_REQUEST)
+    return flask.render_template('index.html')
+
+  @app.route('/profile/')
   def ProfilePage():
     return flask.render_template('index.html')
 
-  @app.route('/policy')
+  @app.route('/policy/')
   def PolicyPage():
     return flask.render_template('index.html')
 

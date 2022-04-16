@@ -31,3 +31,7 @@ mat-divider {
 .finished {
   background: #9de0ae;
 }
+
+.process-state {
+  margin-right: 10px;
+}
