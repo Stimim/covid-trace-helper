@@ -1,6 +1,12 @@
 # covid-trace-helper
 A tool to help filling Taiwan covid-19 traces.
 
+# Environment Setup
+- System Dependency
+  - python, virtualenv, [google-cloud-sdk](https://cloud.google.com/sdk/docs/install), [node.js](https://nodejs.org/en/)
+- Install Packages
+  - `python devtools/dev_env.py init` : this installs backend dependencies
+  - `cd frontend/; npm install` : this installs frontend dependencies
 
 # Build
 ```
