@@ -14,3 +14,13 @@ source ../devtools/venv/bin/activate
 python main.py
 # the local server should be: localhost:8080
 ```
+
+# Google Cloud API
+APIs enabled:
+- Cloud Logging API
+- Cloud Tasks API
+- Cloud Pub/Sub API
+- Cloud Datastore API
+- Cloud Firestore API
+- Cloud Vision API
+- Cloud Identity-Aware Proxy API
