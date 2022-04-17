@@ -15,8 +15,8 @@ python devtools/dev_env.py build
 
 # Run local server
 ```
+source devtools/venv/bin/activate
 cd build/
-source ../devtools/venv/bin/activate
 python main.py
 # the local server should be: localhost:8080
 ```
