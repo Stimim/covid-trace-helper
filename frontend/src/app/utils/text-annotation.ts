@@ -69,7 +69,7 @@ export class TextAnnotation {
 };
 
 
-async function DetectBoundary(imgRef: ElementRef): Promise<TextAnnotation[]> {
+async function DetectBoundary(imgRef: ElementRef, vertical: boolean): Promise<TextAnnotation[]> {
   // console.info('start DetectBoundary');
   const img = imgRef.nativeElement;
   const image = cv.imread(img);
@@ -90,14 +90,18 @@ async function DetectBoundary(imgRef: ElementRef): Promise<TextAnnotation[]> {
   const gap = Math.ceil((endSize - startSize) / SETTING.VERTICAL_LINE_MERGE_STEP);
   for (let size = startSize; size < endSize + gap; size += gap) {
     // Detect vertical line pixels.
-    const verticalStructure = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(1, size));
+    const lineStructure = cv.getStructuringElement(
+      cv.MORPH_RECT,
+      new cv.Size(
+        vertical ? 1 : size,
+        vertical ? size : 1));
 
     // Remove lines that are too short
-    cv.morphologyEx(edgeImage, edgeImage, cv.MORPH_OPEN, verticalStructure);
+    cv.morphologyEx(edgeImage, edgeImage, cv.MORPH_OPEN, lineStructure);
     // Merge lines that are close to each other vertically
-    cv.morphologyEx(edgeImage, edgeImage, cv.MORPH_CLOSE, verticalStructure);
+    cv.morphologyEx(edgeImage, edgeImage, cv.MORPH_CLOSE, lineStructure);
 
-    verticalStructure.delete();
+    lineStructure.delete();
 
     // To merge lines that are close to each other horizontally
     cv.morphologyEx(edgeImage, edgeImage, cv.MORPH_CLOSE, squareStructure);
@@ -125,9 +129,15 @@ async function DetectBoundary(imgRef: ElementRef): Promise<TextAnnotation[]> {
         boxList[v - 1].Merge(new TextAnnotation(['', j, j, i, i]));
       }
     }
-    boxList.sort((a, b) => {
-      return a.minX - b.minX
-    });
+    if (vertical) {
+      boxList.sort((a, b) => {
+        return a.minX - b.minX
+      });
+    } else {
+      boxList.sort((a, b) => {
+        return a.minY - b.minY
+      });
+    }
   }
 
   labelledImage.delete();
@@ -172,8 +182,10 @@ function MergeRows(toProcess: TextAnnotation[]) {
 
 
 export async function ProcessTextAnnotation(
-    imgRef: ElementRef, textAnnotations: TextAnnotation[]): Promise<[TextAnnotation[], TextAnnotation[], number, number]> {
-  const boundaryList = await DetectBoundary(imgRef);
+    imgRef: ElementRef, textAnnotations: TextAnnotation[]):
+      Promise<[TextAnnotation[], TextAnnotation[], TextAnnotation[], number, number]> {
+  const boundaryListVertical = await DetectBoundary(imgRef, true);
+  const boundaryListHorizontal = await DetectBoundary(imgRef, false);
   let retval: TextAnnotation[] = [];
   let width = 0;
   let height = 0;
@@ -185,7 +197,7 @@ export async function ProcessTextAnnotation(
     height = Math.max(text.maxY, height);
   }
 
-  for (const boundary of boundaryList) {
+  for (const boundary of boundaryListVertical) {
     const toProcess: TextAnnotation[] = [];
     const toSkip: TextAnnotation[] = [];
 
@@ -209,5 +221,5 @@ export async function ProcessTextAnnotation(
   retval.sort((a, b) => {
     return a.minY - b.minY;
   });
-  return [retval, boundaryList, width, height];
+  return [retval, boundaryListVertical, boundaryListHorizontal, width, height];
 }

@@ -37,7 +37,8 @@ export class PhotoEditorComponent implements OnInit {
 
   outerBoxWidth = 0;
   outerBoxHeight = 0;
-  boundaryList: TextAnnotation[] = [];
+  boundaryListVertical: TextAnnotation[] = [];
+  boundaryListHorizontal: TextAnnotation[] = [];
   processTextAnnotationDone = false;
 
   selectedAreaStartPoint?: Point;
@@ -86,13 +87,14 @@ export class PhotoEditorComponent implements OnInit {
     while (!this.imgRef.nativeElement.complete)
       await new Promise(r => setTimeout(r, 1000));
 
-    const [results, boundaryList, width, height] = await ProcessTextAnnotation(this.imgRef, textAnnotations);
+    [
+      this.texts,
+      this.boundaryListVertical,
+      this.boundaryListHorizontal,
+      this.outerBoxWidth,
+      this.outerBoxHeight,
+    ] = await ProcessTextAnnotation(this.imgRef, textAnnotations);
     this.processTextAnnotationDone = true;
-
-    this.texts = results;
-    this.outerBoxWidth = width;
-    this.outerBoxHeight = height;
-    this.boundaryList = boundaryList;
 
     this.DrawCanvas();
   }
@@ -125,10 +127,17 @@ export class PhotoEditorComponent implements OnInit {
     ctx.textBaseline = 'top';
 
     if (this.formGroup.value.showBoundary) {
-      for (const b of this.boundaryList) {
+      for (const b of this.boundaryListVertical) {
         ctx.strokeStyle = 'red';
-        // ctx.strokeRect(b.minX, 0, 1, this.outerBoxHeight);
         ctx.strokeRect(b.minX, b.minY, 1, b.maxY - b.minY);
+        ctx.strokeStyle = 'black';
+      }
+    }
+
+    if (this.formGroup.value.showBoundary) {
+      for (const b of this.boundaryListHorizontal) {
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(b.minX, b.minY, b.maxX - b.minX, 1);
         ctx.strokeStyle = 'black';
       }
     }
